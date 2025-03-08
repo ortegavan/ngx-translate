@@ -1,59 +1,85 @@
 # NgxTranslate
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.0.
+Esta é uma prova de conceito para internacionalização de aplicações em Angular usando ngx-translate.
 
-## Development server
-
-To start a local development server, run:
+1. Adicione os pacotes necessários:
 
 ```bash
-ng serve
+npm install @ngx-translate/core @ngx-translate/http-loader @colsen1991/ngx-translate-extract-marker
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+2. Configure o módulo de tradução no app.config.ts:
 
-## Code scaffolding
+```typescript
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from "@angular/core";
+import { provideRouter } from "@angular/router";
+import { routes } from "./app.routes";
+import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
+import { TranslateHttpLoader } from "@ngx-translate/http-loader";
+import { HttpClient } from "@angular/common/http";
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+const httpLoaderFactory: (http: HttpClient) => TranslateHttpLoader = (http: HttpClient) => new TranslateHttpLoader(http, "./i18n/", ".json");
 
-```bash
-ng generate component component-name
+export const appConfig: ApplicationConfig = {
+    providers: [
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideRouter(routes),
+        importProvidersFrom([
+            TranslateModule.forRoot({
+                loader: {
+                    provide: TranslateLoader,
+                    useFactory: httpLoaderFactory,
+                    deps: [HttpClient],
+                },
+            }),
+        ]),
+    ],
+};
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+3. Faça o setup da aplicação em app.component.ts:
 
-```bash
-ng generate --help
+```typescript
+import { Component, inject, OnInit } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { TranslateService } from "@ngx-translate/core";
+
+@Component({
+    selector: "app-root",
+    imports: [RouterOutlet],
+    templateUrl: "./app.component.html",
+    styleUrl: "./app.component.scss",
+})
+export class AppComponent implements OnInit {
+    translateService = inject(TranslateService);
+
+    ngOnInit(): void {
+        this.translateService.addLangs(["pt", "en"]);
+        this.translateService.setDefaultLang("pt");
+        this.translateService.use("pt");
+    }
+}
 ```
 
-## Building
+4. Aplique o pipe de tradução nos templates:
 
-To build the project run:
-
-```bash
-ng build
+```html
+<p>{{ "Olá mundo" | translate }}</p>
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+5. Configure os arquivos JSON de tradução, por exemplo:
 
-## Running unit tests
+- public/i18n/pt.json
+- public/i18n/en.json
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+```json
+{
+    "Olá, mundo!": "Hello, world!"
+}
 ```
 
-## Running end-to-end tests
+6. Para trocar de idioma, basta chamar o método use do serviço de tradução:
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```typescript
+this.translateService.use("pt");
 ```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
