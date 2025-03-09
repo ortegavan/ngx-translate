@@ -78,7 +78,7 @@ export class AppComponent implements OnInit {
 }
 ```
 
-6. Para trocar de idioma, basta chamar o método use do serviço de tradução:
+6. Para trocar de idioma, basta chamar o método `use` do serviço de tradução:
 
 ```typescript
 this.translateService.use("pt");
